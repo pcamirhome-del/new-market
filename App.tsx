@@ -9,10 +9,10 @@ import OrderRequests from './pages/OrderRequests';
 import BarcodePrinting from './pages/BarcodePrinting';
 import AdminSettings from './pages/AdminSettings';
 import { Permission } from './types';
-import { Menu, User as UserIcon, Bell } from 'lucide-react';
+import { Menu, User as UserIcon, Bell, CloudSync } from 'lucide-react';
 
 const App: React.FC = () => {
-  const { state, updateState, login, logout } = useStore();
+  const { state, updateState, login, logout, isLoading } = useStore();
   const [activeTab, setActiveTab] = useState<Permission>('DASHBOARD');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -52,6 +52,17 @@ const App: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin text-blue-600">
+          <CloudSync size={48} />
+        </div>
+        <p className="text-gray-500 font-medium">جاري المزامنة مع السحاب...</p>
+      </div>
+    );
+  }
+
   if (!state.currentUser) {
     return <Login onLogin={handleLogin} appName={state.settings.appName} />;
   }
@@ -78,10 +89,14 @@ const App: React.FC = () => {
             <Menu size={24} />
           </button>
 
-          <div className="flex-1 text-right">
+          <div className="flex-1 text-right flex items-center gap-2">
             <h2 className="text-lg font-bold text-gray-900 hidden md:block">
               {getTabTitle(activeTab)}
             </h2>
+            <div className="flex items-center gap-1 text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100 animate-pulse">
+               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+               متصل سحابياً
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

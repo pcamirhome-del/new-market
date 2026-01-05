@@ -1,9 +1,25 @@
 
 import { useState, useEffect } from 'react';
-import { AppState, User, UserRole, Permission, GlobalSettings, Product, Company } from './types';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, onValue, set, get } from 'firebase/database';
+import { AppState, User, UserRole, GlobalSettings, Company, Product } from './types';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAYdWvZbTTkGlfI6vv02EFUMbw5eeF4UpU",
+  authDomain: "sample-firebase-adddi-app.firebaseapp.com",
+  databaseURL: "https://sample-firebase-adddi-app-default-rtdb.firebaseio.com",
+  projectId: "sample-firebase-adddi-app",
+  storageBucket: "sample-firebase-adddi-app.firebasestorage.app",
+  messagingSenderId: "1013529485030",
+  appId: "1:1013529485030:web:3dd9b79cd7d7ba41b42527"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 const INITIAL_SETTINGS: GlobalSettings = {
-  appName: 'سوبر ماركت برو',
+  appName: 'سوبر ماركت برو (سحابي)',
   profitMargin: 15,
 };
 
@@ -15,55 +31,84 @@ const DEFAULT_ADMIN: User = {
   permissions: ['DASHBOARD', 'INVENTORY', 'ORDER_REQUESTS', 'BARCODE_PRINT', 'ADMIN_SETTINGS'],
 };
 
-// بيانات تجريبية لتظهر فوراً
-const MOCK_COMPANIES: Company[] = [
-  { id: '100', name: 'شركة المراعي', code: 'COMP-100', debt: 0 },
-  { id: '101', name: 'شركة صافولا', code: 'COMP-101', debt: 500 }
-];
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: '1', barcode: '6221234567890', name: 'حليب كامل الدسم 1 لتر', companyId: '100', costPrice: 5, sellingPrice: 6, stock: 50, category: 'ألبان', unit: 'حبة' },
-  { id: '2', barcode: '12345678', name: 'زيت دوار الشمس 1.5 لتر', companyId: '101', costPrice: 15, sellingPrice: 18, stock: 20, category: 'زيوت', unit: 'حبة' }
-];
-
-// تغيير المفتاح لضمان تحديث البيانات عند المستخدم
-const STORAGE_KEY = 'supermarket_state_v2';
-
 export const useStore = () => {
-  const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-    return {
-      users: [DEFAULT_ADMIN],
-      currentUser: null,
-      companies: MOCK_COMPANIES,
-      products: MOCK_PRODUCTS,
-      sales: [],
-      orders: [],
-      settings: INITIAL_SETTINGS,
-    };
+  const [state, setState] = useState<AppState>({
+    users: [DEFAULT_ADMIN],
+    currentUser: null,
+    companies: [],
+    products: [],
+    sales: [],
+    orders: [],
+    settings: INITIAL_SETTINGS,
   });
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // 1. استماع للبيانات من السحاب (Firebase)
+  useEffect(() => {
+    const dbRef = ref(db, 'market_data');
+    const unsubscribe = onValue(dbRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // نقوم بتحديث الحالة مع الحفاظ على المستخدم الحالي المسجل محلياً
+        setState(prev => ({
+          ...data,
+          currentUser: prev.currentUser // الحفاظ على جلسة الدخول محلية
+        }));
+      } else {
+        // إذا كانت قاعدة البيانات فارغة، نرفع البيانات الافتراضية
+        const initialState = {
+          users: [DEFAULT_ADMIN],
+          companies: [],
+          products: [],
+          sales: [],
+          orders: [],
+          settings: INITIAL_SETTINGS,
+        };
+        set(dbRef, initialState);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. تحديث السحاب عند تغيير الحالة محلياً
   const updateState = (updates: Partial<AppState>) => {
-    setState(prev => ({ ...prev, ...updates }));
+    const newState = { ...state, ...updates };
+    
+    // إزالة currentUser قبل الرفع للسحاب لكي لا يرى الجميع نفس جلسة الدخول
+    const { currentUser, ...cloudState } = newState;
+    
+    setState(newState);
+    set(ref(db, 'market_data'), cloudState).catch(err => {
+      console.error("خطأ في مزامنة البيانات السحابية:", err);
+    });
   };
 
   const login = (username: string, password: string): User | null => {
     const user = state.users.find(u => u.username === username && u.password === password);
     if (user) {
-      updateState({ currentUser: user });
+      setState(prev => ({ ...prev, currentUser: user }));
+      // تخزين جلسة بسيطة في sessionStorage للحفاظ على الدخول عند تحديث الصفحة
+      sessionStorage.setItem('current_user', JSON.stringify(user));
       return user;
     }
     return null;
   };
 
   const logout = () => {
-    updateState({ currentUser: null });
+    setState(prev => ({ ...prev, currentUser: null }));
+    sessionStorage.removeItem('current_user');
   };
 
-  return { state, updateState, login, logout };
+  // محاولة استعادة الجلسة من sessionStorage عند التحميل
+  useEffect(() => {
+    const savedUser = sessionStorage.getItem('current_user');
+    if (savedUser) {
+      setState(prev => ({ ...prev, currentUser: JSON.parse(savedUser) }));
+    }
+  }, []);
+
+  return { state, updateState, login, logout, isLoading };
 };
