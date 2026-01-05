@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-/* Added Clock to imports */
 import { Plus, Search, ChevronRight, Share2, Printer, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { AppState, Order, Company } from '../types';
 import { formatCurrency, formatDate, getNextSerialNumber } from '../utils';
@@ -33,12 +32,12 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
   };
 
   const handleCreateOrder = () => {
-    if (!selectedCompanyId) return alert('Select a company');
-    if (newOrderItems.length === 0) return alert('Add at least one item');
+    if (!selectedCompanyId) return alert('الرجاء اختيار شركة');
+    if (newOrderItems.length === 0) return alert('الرجاء إضافة صنف واحد على الأقل');
 
     const company = state.companies.find(c => c.id === selectedCompanyId);
     if (company && company.debt > 0) {
-      if (!confirm(`Warning: This company has an unpaid previous balance of ${formatCurrency(company.debt)}. Do you want to continue?`)) return;
+      if (!confirm(`تحذير: هذه الشركة لديها مديونية سابقة قدرها ${formatCurrency(company.debt)}. هل تريد الاستمرار؟`)) return;
     }
 
     const totalAmount = newOrderItems.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
@@ -71,7 +70,6 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
   const toggleStatus = (order: Order) => {
     const newStatus = order.status === 'PENDING' ? 'RECEIVED' : 'PENDING';
     
-    // If received, update main inventory
     let updatedProducts = [...state.products];
     if (newStatus === 'RECEIVED') {
       order.items.forEach(item => {
@@ -99,38 +97,37 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
   };
 
   const shareViaWhatsApp = (order: Order) => {
-    const company = state.companies.find(c => c.id === order.companyId);
-    const message = `Order Request: #${order.id}%0AFrom: ${state.settings.appName}%0AItems: ${order.items.map(i => `${i.name} (${i.quantity})`).join(', ')}`;
+    const message = `طلب توريد: #${order.id}%0Aمن: ${state.settings.appName}%0Aالأصناف: ${order.items.map(i => `${i.name} (${i.quantity})`).join(', ')}`;
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-start" dir="rtl">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Procurement & Orders</h1>
-          <p className="text-gray-500">Manage vendor invoices and order requests.</p>
+          <h1 className="text-2xl font-bold text-gray-900">المشتريات والطلبات</h1>
+          <p className="text-gray-500">إدارة فواتير الموردين وطلبات الشراء.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setIsAddingCompany(true)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-            <Plus size={18} /> Company
+            <Plus size={18} /> شركة جديدة
           </button>
           <button onClick={() => setIsAddingOrder(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-            <Plus size={18} /> New Invoice
+            <Plus size={18} /> فاتورة شراء
           </button>
         </div>
       </div>
 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <table className="w-full text-left">
+        <table className="w-full text-start">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Order ID</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Vendor</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Total</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Due Date</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Actions</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">رقم الطلب</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">المورد</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">الإجمالي</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">تاريخ الاستحقاق</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">الحالة</th>
+              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-end">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -138,8 +135,8 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
               <tr key={order.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 font-mono text-sm font-semibold">#{order.id}</td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium">{state.companies.find(c => c.id === order.companyId)?.name || 'Unknown'}</div>
-                  <div className="text-xs text-gray-500">Created: {formatDate(order.createdAt)}</div>
+                  <div className="text-sm font-medium">{state.companies.find(c => c.id === order.companyId)?.name || 'غير معروف'}</div>
+                  <div className="text-xs text-gray-500">أنشئ في: {formatDate(order.createdAt)}</div>
                 </td>
                 <td className="px-6 py-4 text-sm">{formatCurrency(order.totalAmount)}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{formatDate(order.dueDate)}</td>
@@ -153,59 +150,56 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
                     }`}
                   >
                     {order.status === 'RECEIVED' ? <CheckCircle2 size={14} /> : <Clock size={14} />}
-                    {order.status}
+                    {order.status === 'RECEIVED' ? 'تم الاستلام' : 'قيد الانتظار'}
                   </button>
                 </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  <button onClick={() => shareViaWhatsApp(order)} className="p-2 text-gray-400 hover:text-green-600"><Share2 size={18} /></button>
+                <td className="px-6 py-4 text-end space-x-2">
+                  <button onClick={() => shareViaWhatsApp(order)} className="p-2 text-gray-400 hover:text-green-600 ml-2"><Share2 size={18} /></button>
                   <button onClick={() => window.print()} className="p-2 text-gray-400 hover:text-blue-600"><Printer size={18} /></button>
                 </td>
               </tr>
             ))}
-            {state.orders.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">No invoices yet.</td></tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* New Invoice Modal */}
+      {/* مودال فاتورة جديدة */}
       {isAddingOrder && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col text-start">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold">New Purchase Invoice</h2>
+              <h2 className="text-xl font-bold">فاتورة مشتريات جديدة</h2>
               <span className="text-gray-400 font-mono text-sm">#{getNextSerialNumber(state.orders, 1000)}</span>
             </div>
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Select Company</label>
+                  <label className="block text-sm font-medium mb-1">اختر المورد</label>
                   <select 
                     value={selectedCompanyId}
                     onChange={(e) => setSelectedCompanyId(e.target.value)}
                     className="w-full p-2 border rounded-lg"
                   >
-                    <option value="">Select Vendor...</option>
+                    <option value="">اختر شركة...</option>
                     {state.companies.map(c => (
                       <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Order Date</label>
+                  <label className="block text-sm font-medium mb-1">تاريخ الطلب</label>
                   <input type="text" disabled value={formatDate(Date.now())} className="w-full p-2 border rounded-lg bg-gray-50" />
                 </div>
               </div>
 
               <div className="border rounded-xl overflow-hidden">
-                <table className="w-full text-left">
+                <table className="w-full text-start">
                   <thead className="bg-gray-50 text-xs font-semibold uppercase text-gray-500">
                     <tr>
-                      <th className="px-4 py-2">Item</th>
-                      <th className="px-4 py-2">Cost</th>
-                      <th className="px-4 py-2">Qty</th>
-                      <th className="px-4 py-2">Total</th>
+                      <th className="px-4 py-2">الصنف</th>
+                      <th className="px-4 py-2">التكلفة</th>
+                      <th className="px-4 py-2">الكمية</th>
+                      <th className="px-4 py-2">الإجمالي</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -221,10 +215,10 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
                       <td colSpan={4} className="p-2">
                         <button 
                           onClick={() => {
-                            const name = prompt('Item name?');
-                            const barcode = prompt('Barcode?');
-                            const cost = parseFloat(prompt('Cost price?') || '0');
-                            const qty = parseInt(prompt('Quantity?') || '1');
+                            const name = prompt('اسم الصنف؟');
+                            const barcode = prompt('الباركود؟');
+                            const cost = parseFloat(prompt('سعر التكلفة؟') || '0');
+                            const qty = parseInt(prompt('الكمية؟') || '1');
                             if (name && barcode) {
                               setNewOrderItems([...newOrderItems, { 
                                 name, barcode, costPrice: cost, quantity: qty,
@@ -234,7 +228,7 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
                           }}
                           className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-blue-600 hover:border-blue-400 transition-all flex items-center justify-center gap-2"
                         >
-                          <Plus size={16} /> Add Item
+                          <Plus size={16} /> إضافة صنف
                         </button>
                       </td>
                     </tr>
@@ -244,7 +238,7 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
 
               <div className="flex justify-between items-end gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">Amount Paid Now</label>
+                  <label className="block text-sm font-medium mb-1">المبلغ المدفوع حالياً</label>
                   <input 
                     type="number" 
                     value={paidAmount} 
@@ -252,8 +246,8 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
                     className="w-full p-2 border rounded-lg"
                   />
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Bill</div>
+                <div className="text-end">
+                  <div className="text-sm text-gray-500">إجمالي الفاتورة</div>
                   <div className="text-2xl font-bold text-gray-900">
                     {formatCurrency(newOrderItems.reduce((sum, i) => sum + (i.costPrice * i.quantity), 0))}
                   </div>
@@ -261,26 +255,26 @@ const OrderRequests: React.FC<OrderRequestsProps> = ({ state, updateState }) => 
               </div>
             </div>
             <div className="p-6 border-t flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
-              <button onClick={() => setIsAddingOrder(false)} className="px-6 py-2 border rounded-lg bg-white">Cancel</button>
-              <button onClick={handleCreateOrder} className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700">Submit Invoice</button>
+              <button onClick={() => setIsAddingOrder(false)} className="px-6 py-2 border rounded-lg bg-white">إلغاء</button>
+              <button onClick={handleCreateOrder} className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700">اعتماد الفاتورة</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Company Modal */}
+      {/* مودال إضافة شركة */}
       {isAddingCompany && (
         <div className="fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">Add New Vendor</h2>
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 text-start">
+            <h2 className="text-xl font-bold mb-4">إضافة مورد جديد</h2>
             <form onSubmit={handleAddCompany} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Company Name</label>
-                <input required name="name" className="w-full p-2 border rounded-lg" placeholder="Vendor Name" />
+                <label className="block text-sm font-medium mb-1">اسم الشركة</label>
+                <input required name="name" className="w-full p-2 border rounded-lg" placeholder="اسم المورد" />
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setIsAddingCompany(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Create Vendor</button>
+                <button type="button" onClick={() => setIsAddingCompany(false)} className="px-4 py-2 border rounded-lg">إلغاء</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">حفظ المورد</button>
               </div>
             </form>
           </div>

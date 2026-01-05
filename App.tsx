@@ -34,7 +34,7 @@ const App: React.FC = () => {
     const titles: Record<string, string> = {
       'DASHBOARD': 'لوحة التحكم',
       'INVENTORY': 'المخزون',
-      'ORDER_REQUESTS': 'الطلبات والمشتريات',
+      'ORDER_REQUESTS': 'المشتريات والطلبات',
       'BARCODE_PRINT': 'طباعة الباركود',
       'ADMIN_SETTINGS': 'الإعدادات'
     };
@@ -57,7 +57,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-row-reverse">
+    <div className="min-h-screen bg-gray-50 flex" dir="rtl">
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
@@ -70,35 +70,35 @@ const App: React.FC = () => {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative" onClick={() => isSidebarOpen && setIsSidebarOpen(false)}>
         {/* Navbar */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:px-8 no-print sticky top-0 z-30 flex-row-reverse">
+        <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:px-8 no-print sticky top-0 z-30">
           <button 
             onClick={(e) => { e.stopPropagation(); setIsSidebarOpen(true); }}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg ml-2"
           >
             <Menu size={24} />
           </button>
 
-          <div className="flex-1 px-4 lg:px-0 text-start">
+          <div className="flex-1 text-right">
             <h2 className="text-lg font-bold text-gray-900 hidden md:block">
               {getTabTitle(activeTab)}
             </h2>
           </div>
 
-          <div className="flex items-center gap-4 flex-row-reverse">
-            <div className="flex items-center gap-2 flex-row-reverse">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                {state.currentUser.username[0].toUpperCase()}
-              </div>
-              <div className="hidden sm:block text-end">
-                <p className="text-sm font-semibold leading-none">{state.currentUser.username}</p>
-                <p className="text-[10px] text-gray-500 leading-none mt-1">{state.currentUser.role === 'ADMIN' ? 'مسؤول' : 'موظف'}</p>
-              </div>
-            </div>
-            <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
+          <div className="flex items-center gap-4">
             <button className="p-2 text-gray-400 hover:text-blue-600 relative">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
+            <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
+            <div className="flex items-center gap-2">
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-semibold leading-none">{state.currentUser.username}</p>
+                <p className="text-[10px] text-gray-500 leading-none mt-1">{state.currentUser.role === 'ADMIN' ? 'مسؤول' : 'موظف'}</p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                {state.currentUser.username[0].toUpperCase()}
+              </div>
+            </div>
           </div>
         </header>
 
@@ -110,11 +110,11 @@ const App: React.FC = () => {
 
       {/* Welcome Toast */}
       {showWelcome && (
-        <div className="fixed top-4 left-4 bg-white border-r-4 border-blue-600 shadow-2xl rounded-xl p-4 animate-bounce z-[200] flex items-center gap-3 flex-row-reverse">
+        <div className="fixed top-4 left-4 bg-white border-r-4 border-blue-600 shadow-2xl rounded-xl p-4 animate-bounce z-[200] flex items-center gap-3">
           <div className="bg-blue-50 p-2 rounded-full text-blue-600">
             <UserIcon size={20} />
           </div>
-          <div className="text-end">
+          <div className="text-right">
             <p className="text-sm text-gray-500">أهلاً بك مجدداً،</p>
             <p className="font-bold text-gray-900">{state.currentUser.username}!</p>
           </div>

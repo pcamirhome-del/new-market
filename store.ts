@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { AppState, User, UserRole, Permission, GlobalSettings } from './types';
+import { AppState, User, UserRole, Permission, GlobalSettings, Product, Company } from './types';
 
 const INITIAL_SETTINGS: GlobalSettings = {
-  appName: 'Market Pro',
+  appName: 'سوبر ماركت برو',
   profitMargin: 15,
 };
 
@@ -15,7 +15,19 @@ const DEFAULT_ADMIN: User = {
   permissions: ['DASHBOARD', 'INVENTORY', 'ORDER_REQUESTS', 'BARCODE_PRINT', 'ADMIN_SETTINGS'],
 };
 
-const STORAGE_KEY = 'supermarket_state_v1';
+// بيانات تجريبية لتظهر فوراً
+const MOCK_COMPANIES: Company[] = [
+  { id: '100', name: 'شركة المراعي', code: 'COMP-100', debt: 0 },
+  { id: '101', name: 'شركة صافولا', code: 'COMP-101', debt: 500 }
+];
+
+const MOCK_PRODUCTS: Product[] = [
+  { id: '1', barcode: '6221234567890', name: 'حليب كامل الدسم 1 لتر', companyId: '100', costPrice: 5, sellingPrice: 6, stock: 50, category: 'ألبان', unit: 'حبة' },
+  { id: '2', barcode: '12345678', name: 'زيت دوار الشمس 1.5 لتر', companyId: '101', costPrice: 15, sellingPrice: 18, stock: 20, category: 'زيوت', unit: 'حبة' }
+];
+
+// تغيير المفتاح لضمان تحديث البيانات عند المستخدم
+const STORAGE_KEY = 'supermarket_state_v2';
 
 export const useStore = () => {
   const [state, setState] = useState<AppState>(() => {
@@ -24,8 +36,8 @@ export const useStore = () => {
     return {
       users: [DEFAULT_ADMIN],
       currentUser: null,
-      companies: [],
-      products: [],
+      companies: MOCK_COMPANIES,
+      products: MOCK_PRODUCTS,
       sales: [],
       orders: [],
       settings: INITIAL_SETTINGS,
