@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, set, get } from 'firebase/database';
+import { getDatabase, ref, onValue, set } from 'firebase/database';
 import { AppState, User, UserRole, GlobalSettings, Company, Product } from './types';
 
 const firebaseConfig = {
@@ -31,6 +31,17 @@ const DEFAULT_ADMIN: User = {
   permissions: ['DASHBOARD', 'INVENTORY', 'ORDER_REQUESTS', 'BARCODE_PRINT', 'ADMIN_SETTINGS'],
 };
 
+// بيانات تجريبية لتظهر فوراً في حال كانت القاعدة فارغة
+const MOCK_COMPANIES: Company[] = [
+  { id: '100', name: 'شركة المراعي', code: 'COMP-100', debt: 0 },
+  { id: '101', name: 'شركة صافولا', code: 'COMP-101', debt: 500 }
+];
+
+const MOCK_PRODUCTS: Product[] = [
+  { id: '1', barcode: '6221234567890', name: 'حليب كامل الدسم 1 لتر', companyId: '100', costPrice: 5, sellingPrice: 6, stock: 50, category: 'ألبان', unit: 'حبة' },
+  { id: '2', barcode: '12345678', name: 'زيت دوار الشمس 1.5 لتر', companyId: '101', costPrice: 15, sellingPrice: 18, stock: 20, category: 'زيوت', unit: 'حبة' }
+];
+
 export const useStore = () => {
   const [state, setState] = useState<AppState>({
     users: [DEFAULT_ADMIN],
@@ -50,23 +61,31 @@ export const useStore = () => {
     const unsubscribe = onValue(dbRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // نقوم بتحديث الحالة مع الحفاظ على المستخدم الحالي المسجل محلياً
         setState(prev => ({
           ...data,
-          currentUser: prev.currentUser // الحفاظ على جلسة الدخول محلية
+          currentUser: prev.currentUser, // الحفاظ على جلسة الدخول محلية
+          users: data.users || [DEFAULT_ADMIN],
+          companies: data.companies || [],
+          products: data.products || [],
+          sales: data.sales || [],
+          orders: data.orders || [],
+          settings: data.settings || INITIAL_SETTINGS,
         }));
       } else {
-        // إذا كانت قاعدة البيانات فارغة، نرفع البيانات الافتراضية
+        // إذا كانت قاعدة البيانات فارغة تماماً، نرفع البيانات الافتراضية والتجريبية
         const initialState = {
           users: [DEFAULT_ADMIN],
-          companies: [],
-          products: [],
+          companies: MOCK_COMPANIES,
+          products: MOCK_PRODUCTS,
           sales: [],
           orders: [],
           settings: INITIAL_SETTINGS,
         };
         set(dbRef, initialState);
       }
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Firebase read error:", error);
       setIsLoading(false);
     });
 
@@ -75,14 +94,17 @@ export const useStore = () => {
 
   // 2. تحديث السحاب عند تغيير الحالة محلياً
   const updateState = (updates: Partial<AppState>) => {
-    const newState = { ...state, ...updates };
-    
-    // إزالة currentUser قبل الرفع للسحاب لكي لا يرى الجميع نفس جلسة الدخول
-    const { currentUser, ...cloudState } = newState;
-    
-    setState(newState);
-    set(ref(db, 'market_data'), cloudState).catch(err => {
-      console.error("خطأ في مزامنة البيانات السحابية:", err);
+    setState(prev => {
+      const newState = { ...prev, ...updates };
+      
+      // نرفع البيانات للسحاب بدون currentUser لضمان استقلالية الجلسات
+      const { currentUser, ...cloudData } = newState;
+      
+      set(ref(db, 'market_data'), cloudData).catch(err => {
+        console.error("خطأ في مزامنة البيانات السحابية:", err);
+      });
+      
+      return newState;
     });
   };
 
@@ -90,7 +112,6 @@ export const useStore = () => {
     const user = state.users.find(u => u.username === username && u.password === password);
     if (user) {
       setState(prev => ({ ...prev, currentUser: user }));
-      // تخزين جلسة بسيطة في sessionStorage للحفاظ على الدخول عند تحديث الصفحة
       sessionStorage.setItem('current_user', JSON.stringify(user));
       return user;
     }
@@ -102,7 +123,7 @@ export const useStore = () => {
     sessionStorage.removeItem('current_user');
   };
 
-  // محاولة استعادة الجلسة من sessionStorage عند التحميل
+  // استعادة الجلسة عند إعادة تحميل الصفحة
   useEffect(() => {
     const savedUser = sessionStorage.getItem('current_user');
     if (savedUser) {
