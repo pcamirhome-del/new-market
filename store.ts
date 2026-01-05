@@ -14,7 +14,6 @@ const firebaseConfig = {
   appId: "1:1013529485030:web:3dd9b79cd7d7ba41b42527"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -31,17 +30,6 @@ const DEFAULT_ADMIN: User = {
   permissions: ['DASHBOARD', 'INVENTORY', 'ORDER_REQUESTS', 'BARCODE_PRINT', 'ADMIN_SETTINGS'],
 };
 
-// بيانات تجريبية لتظهر فوراً في حال كانت القاعدة فارغة
-const MOCK_COMPANIES: Company[] = [
-  { id: '100', name: 'شركة المراعي', code: 'COMP-100', debt: 0 },
-  { id: '101', name: 'شركة صافولا', code: 'COMP-101', debt: 500 }
-];
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: '1', barcode: '6221234567890', name: 'حليب كامل الدسم 1 لتر', companyId: '100', costPrice: 5, sellingPrice: 6, stock: 50, category: 'ألبان', unit: 'حبة' },
-  { id: '2', barcode: '12345678', name: 'زيت دوار الشمس 1.5 لتر', companyId: '101', costPrice: 15, sellingPrice: 18, stock: 20, category: 'زيوت', unit: 'حبة' }
-];
-
 export const useStore = () => {
   const [state, setState] = useState<AppState>({
     users: [DEFAULT_ADMIN],
@@ -55,7 +43,6 @@ export const useStore = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. استماع للبيانات من السحاب (Firebase)
   useEffect(() => {
     const dbRef = ref(db, 'market_data');
     const unsubscribe = onValue(dbRef, (snapshot) => {
@@ -63,20 +50,15 @@ export const useStore = () => {
       if (data) {
         setState(prev => ({
           ...data,
-          currentUser: prev.currentUser, // الحفاظ على جلسة الدخول محلية
+          currentUser: prev.currentUser,
           users: data.users || [DEFAULT_ADMIN],
-          companies: data.companies || [],
-          products: data.products || [],
-          sales: data.sales || [],
-          orders: data.orders || [],
-          settings: data.settings || INITIAL_SETTINGS,
+          settings: data.settings || INITIAL_SETTINGS
         }));
       } else {
-        // إذا كانت قاعدة البيانات فارغة تماماً، نرفع البيانات الافتراضية والتجريبية
         const initialState = {
           users: [DEFAULT_ADMIN],
-          companies: MOCK_COMPANIES,
-          products: MOCK_PRODUCTS,
+          companies: [],
+          products: [],
           sales: [],
           orders: [],
           settings: INITIAL_SETTINGS,
@@ -85,25 +67,20 @@ export const useStore = () => {
       }
       setIsLoading(false);
     }, (error) => {
-      console.error("Firebase read error:", error);
+      console.error("Firebase Sync Error:", error);
       setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // 2. تحديث السحاب عند تغيير الحالة محلياً
   const updateState = (updates: Partial<AppState>) => {
     setState(prev => {
       const newState = { ...prev, ...updates };
-      
-      // نرفع البيانات للسحاب بدون currentUser لضمان استقلالية الجلسات
       const { currentUser, ...cloudData } = newState;
-      
       set(ref(db, 'market_data'), cloudData).catch(err => {
-        console.error("خطأ في مزامنة البيانات السحابية:", err);
+        console.error("Cloud Sync Failed:", err);
       });
-      
       return newState;
     });
   };
@@ -123,7 +100,6 @@ export const useStore = () => {
     sessionStorage.removeItem('current_user');
   };
 
-  // استعادة الجلسة عند إعادة تحميل الصفحة
   useEffect(() => {
     const savedUser = sessionStorage.getItem('current_user');
     if (savedUser) {
