@@ -1,0 +1,7 @@
+{
+  "name": "Supermarket Master Pro",
+  "description": "A comprehensive supermarket management system with inventory, sales analytics, barcode scanning, and procurement modules.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
