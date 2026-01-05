@@ -1,21 +1,21 @@
 
 export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('ar-SA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'SAR',
   }).format(amount);
 };
 
 export const formatDate = (timestamp: number) => {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  return new Date(timestamp).toLocaleDateString('ar-SA', {
     year: 'numeric',
-    month: 'short',
+    month: 'long',
     day: 'numeric',
   });
 };
 
 export const formatDateTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleTimeString('en-US', {
+  return new Date(timestamp).toLocaleTimeString('ar-SA', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,

@@ -22,20 +22,20 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!onLogin(username, password)) {
-      setError('Invalid credentials. Hint: admin / admin');
+      setError('بيانات الدخول غير صحيحة. تلميح: admin / admin');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border">
         <div className="bg-blue-600 p-8 text-white text-center space-y-4">
           <div className="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm">
             <ShoppingBasket size={32} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">{appName}</h1>
-            <p className="text-blue-100 text-sm">Supermarket Management System</p>
+            <p className="text-blue-100 text-sm">نظام إدارة السوبر ماركت</p>
           </div>
           <div className="flex items-center justify-center gap-2 text-blue-200 font-mono text-sm border-t border-blue-500 pt-4 mt-4">
             <Clock size={16} />
@@ -43,27 +43,27 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6 text-start">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">اسم المستخدم</label>
             <input 
               required
               type="text" 
               className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="أدخل اسم المستخدم"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">كلمة المرور</label>
             <input 
               required
               type="password" 
               className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="أدخل كلمة المرور"
             />
           </div>
           {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
@@ -72,7 +72,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
             className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <LogIn size={20} />
-            Login Now
+            تسجيل الدخول
           </button>
         </form>
       </div>

@@ -7,7 +7,7 @@ import {
   Barcode, 
   Settings, 
   LogOut,
-  ChevronLeft
+  ChevronRight
 } from 'lucide-react';
 import { Permission, User } from '../types';
 
@@ -33,11 +33,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   if (!currentUser) return null;
 
   const menuItems = [
-    { id: 'DASHBOARD', label: 'Analytics', icon: LayoutDashboard },
-    { id: 'INVENTORY', label: 'Inventory', icon: Package },
-    { id: 'ORDER_REQUESTS', label: 'Orders', icon: ShoppingCart },
-    { id: 'BARCODE_PRINT', label: 'Labels', icon: Barcode },
-    { id: 'ADMIN_SETTINGS', label: 'Settings', icon: Settings },
+    { id: 'DASHBOARD', label: 'لوحة التحكم', icon: LayoutDashboard },
+    { id: 'INVENTORY', label: 'المخزون', icon: Package },
+    { id: 'ORDER_REQUESTS', label: 'الطلبات والمشتريات', icon: ShoppingCart },
+    { id: 'BARCODE_PRINT', label: 'طباعة الباركود', icon: Barcode },
+    { id: 'ADMIN_SETTINGS', label: 'الإعدادات', icon: Settings },
   ].filter(item => currentUser.permissions.includes(item.id as Permission));
 
   return (
@@ -49,12 +49,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       />
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r z-50 transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      <aside className={`fixed top-0 right-0 bottom-0 w-64 bg-white border-l z-50 transition-transform transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           <div className="p-6 border-b flex items-center justify-between">
             <h1 className="text-xl font-bold text-blue-600 truncate">{appName}</h1>
             <button onClick={onClose} className="lg:hidden p-1 rounded-md hover:bg-gray-100">
-              <ChevronLeft size={20} />
+              <ChevronRight size={20} />
             </button>
           </div>
 
@@ -82,8 +82,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </nav>
 
           <div className="p-4 border-t">
-            <div className="px-4 py-3 mb-2">
-              <p className="text-xs text-gray-400 uppercase font-semibold">User</p>
+            <div className="px-4 py-3 mb-2 text-start">
+              <p className="text-xs text-gray-400 uppercase font-semibold">المستخدم الحالي</p>
               <p className="text-sm font-medium text-gray-700">{currentUser.username}</p>
             </div>
             <button
@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
             >
               <LogOut size={20} />
-              <span>Logout</span>
+              <span>تسجيل الخروج</span>
             </button>
           </div>
         </div>
