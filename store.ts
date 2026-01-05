@@ -4,6 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set } from 'firebase/database';
 import { AppState, User, UserRole, GlobalSettings, Company, Product } from './types';
 
+// الإعدادات السحابية التي زودتنا بها
 const firebaseConfig = {
   apiKey: "AIzaSyAYdWvZbTTkGlfI6vv02EFUMbw5eeF4UpU",
   authDomain: "sample-firebase-adddi-app.firebaseapp.com",
@@ -18,7 +19,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const INITIAL_SETTINGS: GlobalSettings = {
-  appName: 'سوبر ماركت برو (سحابي)',
+  appName: 'نظام إدارة السوبر ماركت',
   profitMargin: 15,
 };
 
@@ -50,11 +51,12 @@ export const useStore = () => {
       if (data) {
         setState(prev => ({
           ...data,
-          currentUser: prev.currentUser,
+          currentUser: prev.currentUser, // الحفاظ على الجلسة المحلية
           users: data.users || [DEFAULT_ADMIN],
           settings: data.settings || INITIAL_SETTINGS
         }));
       } else {
+        // تهيئة البيانات لأول مرة
         const initialState = {
           users: [DEFAULT_ADMIN],
           companies: [],

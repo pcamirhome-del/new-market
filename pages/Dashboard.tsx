@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { TrendingUp, DollarSign, Package, ShoppingCart, Clock } from 'lucide-react';
 import { AppState, Sale } from '../types';
-import { formatCurrency, formatDateTime } from '../utils';
+import { formatCurrency, formatDateTimeFull } from '../utils';
 
 interface DashboardProps {
   state: AppState;
@@ -47,21 +47,21 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border shadow-sm">
         <div className="text-start">
           <h1 className="text-2xl font-bold text-gray-900">إحصائيات المتجر</h1>
-          <p className="text-gray-500">أهلاً بك مجدداً في لوحة تحكم متجرك.</p>
+          <p className="text-gray-500">مرحباً بك في لوحة تحكم {state.settings.appName}</p>
         </div>
-        <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg text-blue-700 font-mono">
-          <Clock size={20} />
-          <div className="flex flex-col items-start">
-            <span className="text-lg font-bold">{formatDateTime(now)}</span>
-            <span className="text-xs opacity-75">{new Date(now).toLocaleDateString('ar-SA')}</span>
+        <div className="flex items-center gap-3 bg-blue-50 px-5 py-3 rounded-xl text-blue-700 font-bold border border-blue-100 shadow-inner">
+          <Clock size={24} className="animate-pulse" />
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-sm opacity-80">{formatDateTimeFull(now).split('|')[0]}</span>
+            <span className="text-lg font-black">{formatDateTimeFull(now).split('|')[1]}</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           icon={<DollarSign className="text-green-600" />} 
           label="مبيعات اليوم" 
@@ -88,18 +88,19 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
         />
       </div>
 
-      <div className="bg-white p-6 rounded-xl border shadow-sm">
+      <div className="bg-white p-6 rounded-2xl border shadow-sm">
         <h2 className="text-lg font-semibold mb-6 text-start">نظرة عامة على الإيرادات</h2>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="name" tick={{fontSize: 12, fill: '#9ca3af'}} axisLine={false} tickLine={false} />
+              <YAxis tick={{fontSize: 12, fill: '#9ca3af'}} axisLine={false} tickLine={false} />
               <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', textAlign: 'right' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', textAlign: 'right' }}
+                cursor={{fill: '#f9fafb'}}
               />
-              <Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+              <Bar dataKey="total" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -109,13 +110,13 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 };
 
 const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) => (
-  <div className="bg-white p-6 rounded-xl border shadow-sm flex items-center gap-4">
-    <div className={`p-3 rounded-xl ${color}`}>
+  <div className="bg-white p-6 rounded-2xl border shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+    <div className={`p-4 rounded-2xl ${color}`}>
       {icon}
     </div>
     <div className="text-start">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-sm text-gray-400 font-medium">{label}</p>
+      <p className="text-xl font-black text-gray-900 leading-none mt-1">{value}</p>
     </div>
   </div>
 );

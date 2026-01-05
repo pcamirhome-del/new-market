@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LogIn, Clock, ShoppingBasket } from 'lucide-react';
-import { formatDateTime } from '../utils';
+import { formatDateTimeFull } from '../utils';
 
 interface LoginProps {
   onLogin: (u: string, p: string) => boolean;
@@ -9,8 +9,8 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
 
@@ -22,7 +22,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!onLogin(username, password)) {
-      setError('بيانات الدخول غير صحيحة. تلميح: admin / admin');
+      setError('بيانات الدخول غير صحيحة.');
     }
   };
 
@@ -37,9 +37,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
             <h1 className="text-2xl font-bold">{appName}</h1>
             <p className="text-blue-100 text-sm">نظام إدارة السوبر ماركت</p>
           </div>
-          <div className="flex items-center justify-center gap-2 text-blue-200 font-mono text-sm border-t border-blue-500 pt-4 mt-4">
+          <div className="flex items-center justify-center gap-2 text-blue-200 font-bold text-xs border-t border-blue-500 pt-4 mt-4">
             <Clock size={16} />
-            {formatDateTime(now)}
+            {formatDateTimeFull(now)}
           </div>
         </div>
         
@@ -49,10 +49,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
             <input 
               required
               type="text" 
-              className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all text-center"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="أدخل اسم المستخدم"
+              placeholder="اسم المستخدم"
             />
           </div>
           <div>
@@ -60,13 +60,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, appName }) => {
             <input 
               required
               type="password" 
-              className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-blue-500 outline-none transition-all text-center"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="أدخل كلمة المرور"
+              placeholder="كلمة المرور"
             />
           </div>
-          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+          {error && <p className="text-red-500 text-sm font-medium text-center">{error}</p>}
           <button 
             type="submit" 
             className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
